@@ -1,7 +1,7 @@
 package com.academix.payment;
 
-import com.academix.payment.model.TestEntity;
-import com.academix.payment.repository.TestEntityRepository;
+import com.academix.payment.dto.PaymentRequest;
+import com.academix.payment.service.MpesaPaymentService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,12 +15,22 @@ public class PaymentApplication {
     }
 
     @Bean
-    CommandLineRunner run(TestEntityRepository repository) {
+    CommandLineRunner run(MpesaPaymentService paymentService) {
         return args -> {
-            TestEntity entity = new TestEntity();
-            entity.setMessage("Hello DB");
-            repository.save(entity);
-            System.out.println("✅ Saved test record to PostgreSQL.");
+            PaymentRequest request = new PaymentRequest();
+            request.setPhoneNumber("254725153581"); // Replace with a valid Safaricom number
+            request.setAmount(1); // Test amount in KES
+            request.setDescription("Test STK Push");
+
+            try {
+                paymentService.initiateStkPush(request);
+
+                System.out.println("✅ STK Push initiated successfully:");
+                System.out.println("Phone Number: " + request.getPhoneNumber());
+                System.out.println("Amount: " + request.getAmount() + " KES");
+            } catch (Exception e) {
+                System.err.println("❌ Failed to initiate STK Push: " + e.getMessage());
+            }
         };
     }
 }
