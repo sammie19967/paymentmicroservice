@@ -7,4 +7,7 @@ import java.util.Optional;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     Optional<Transaction> findByReference(String reference);
+
+    // ✅ Add this missing method
+    Optional<Transaction> findByCheckoutRequestId(String checkoutRequestId);
 }

@@ -23,7 +23,7 @@ public class PaymentApplication {
             request.setDescription("Test STK Push");
 
             try {
-                paymentService.initiateStkPush(request);
+                paymentService.initiatePayment(request);
 
                 System.out.println("✅ STK Push initiated successfully:");
                 System.out.println("Phone Number: " + request.getPhoneNumber());

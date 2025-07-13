@@ -1,6 +1,9 @@
 package com.academix.payment.service;
 
 import com.academix.payment.dto.PaymentRequest;
+import com.academix.payment.model.Transaction;
+import com.academix.payment.model.enums.PaymentStatus;
+import com.academix.payment.repository.TransactionRepository;
 import com.academix.payment.util.MpesaUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
@@ -15,34 +18,42 @@ import java.util.Map;
 public class MpesaPaymentService {
 
     private final MpesaUtils mpesaUtils;
+    private final TransactionRepository transactionRepository;
 
-    public void initiateStkPush(PaymentRequest request) {
-        // Get timestamp and generate password
+    public String initiatePayment(PaymentRequest request) {
         String timestamp = mpesaUtils.getTimestamp();
         String password = mpesaUtils.generatePassword(timestamp);
-
-        // Get access token
         String accessToken = mpesaUtils.generateAccessToken();
 
-        // Build STK push payload
+        // Save transaction with PENDING status
+        Transaction transaction = Transaction.builder()
+                .phoneNumber(request.getPhoneNumber())
+                .amount(request.getAmount())
+                .status(PaymentStatus.PENDING)
+                .reference("ZDS")
+                .build();
+        transaction = transactionRepository.save(transaction);
+
+        // Build payload and send request
         Map<String, Object> payload = mpesaUtils.buildStkPushPayload(request, password, timestamp);
-
-        // Build HTTP entity
         HttpEntity<Map<String, Object>> entity = mpesaUtils.buildRequestEntity(payload, accessToken);
-
-        // Get STK push URL
         String url = mpesaUtils.getStkPushUrl();
 
-        // Send STK push request
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+        ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
 
-        // Handle response
-        if (response.getStatusCode().is2xxSuccessful()) {
-            System.out.println("✅ STK Push sent successfully");
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            Map<String, Object> body = response.getBody();
+            transaction.setMerchantRequestId((String) body.get("MerchantRequestID"));
+            transaction.setCheckoutRequestId((String) body.get("CheckoutRequestID"));
+            transactionRepository.save(transaction);
+
+            return "Phone Number: " + request.getPhoneNumber() +
+                    "\nAmount: " + request.getAmount() + " KES";
         } else {
-            System.err.println("❌ STK Push failed: " + response.getBody());
-            throw new RuntimeException("STK Push failed");
+            transaction.setStatus(PaymentStatus.FAILED);
+            transactionRepository.save(transaction);
+            throw new RuntimeException("STK Push failed: " + response.getBody());
         }
     }
 }

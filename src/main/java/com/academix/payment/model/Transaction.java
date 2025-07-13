@@ -25,12 +25,14 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
-    private String reference; // ✅ Add this line
-
+    private String reference;
     private String merchantRequestId;
     private String checkoutRequestId;
     private String mpesaReceiptNumber;
     private LocalDateTime transactionTime;
 
+    private String description; // ✅ Added field for description
+
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt; // ✅ Added field for updated timestamp
 }
