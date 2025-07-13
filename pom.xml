@@ -76,6 +76,10 @@
         	<version>1.18.28</version>
         	<scope>provided</scope>
     	</dependency>
+		<dependency>
+   			<groupId>org.springframework</groupId>
+    		<artifactId>spring-core</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
