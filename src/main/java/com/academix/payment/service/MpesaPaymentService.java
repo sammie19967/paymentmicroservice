@@ -1,61 +1,48 @@
 package com.academix.payment.service;
 
 import com.academix.payment.dto.PaymentRequest;
-import com.academix.payment.model.Transaction;
-import com.academix.payment.model.enums.PaymentStatus;
-import com.academix.payment.repository.TransactionRepository;
 import com.academix.payment.util.MpesaUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class MpesaPaymentService {
 
     private final MpesaUtils mpesaUtils;
-    private final TransactionRepository transactionRepository;
-    private final RestTemplate restTemplate = new RestTemplate(); // optional injection later
 
-    public String initiateStkPush(PaymentRequest request) {
-        try {
-            String accessToken = mpesaUtils.generateAccessToken();
+    public void initiateStkPush(PaymentRequest request) {
+        // Get timestamp and generate password
+        String timestamp = mpesaUtils.getTimestamp();
+        String password = mpesaUtils.generatePassword(timestamp);
 
-            // Generate timestamp and password
-            String timestamp = mpesaUtils.getTimestamp();
-            String password = mpesaUtils.generatePassword(timestamp);
+        // Get access token
+        String accessToken = mpesaUtils.generateAccessToken();
 
-            // Build STK push payload
-            var payload = mpesaUtils.buildStkPushPayload(request, password, timestamp);
+        // Build STK push payload
+        Map<String, Object> payload = mpesaUtils.buildStkPushPayload(request, password, timestamp);
 
-            // Send STK push request
-            var response = restTemplate.postForEntity(
-                    mpesaUtils.getStkPushUrl(),
-                    mpesaUtils.buildRequestEntity(payload, accessToken),
-                    String.class
-            );
+        // Build HTTP entity
+        HttpEntity<Map<String, Object>> entity = mpesaUtils.buildRequestEntity(payload, accessToken);
 
-            log.info("STK Push response: {}", response.getBody());
+        // Get STK push URL
+        String url = mpesaUtils.getStkPushUrl();
 
-            // Save transaction
-            Transaction transaction = Transaction.builder()
-                    .amount(request.getAmount())
-                    .phoneNumber(request.getPhoneNumber())
-                    .description(request.getDescription())
-                    .status(PaymentStatus.PENDING)
-                    .createdAt(LocalDateTime.now())
-                    .build();
+        // Send STK push request
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
-            transactionRepository.save(transaction);
-
-            return "STK Push request sent successfully.";
-        } catch (Exception e) {
-            log.error("Failed to initiate STK Push: {}", e.getMessage());
-            return "STK Push initiation failed.";
+        // Handle response
+        if (response.getStatusCode().is2xxSuccessful()) {
+            System.out.println("✅ STK Push sent successfully");
+        } else {
+            System.err.println("❌ STK Push failed: " + response.getBody());
+            throw new RuntimeException("STK Push failed");
         }
     }
 }

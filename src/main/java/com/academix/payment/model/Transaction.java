@@ -8,10 +8,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
-@Data
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Transaction {
 
     @Id
@@ -20,27 +21,16 @@ public class Transaction {
 
     private String phoneNumber;
 
-    private String reference;
+    private Double amount;
 
-    private double amount;
-
-    private String description;
+    private String mpesaReceiptNumber;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
-    private LocalDateTime createdAt;
+    private String merchantRequestId;
 
-    private LocalDateTime updatedAt;
+    private String checkoutRequestId;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.status = PaymentStatus.PENDING;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    private LocalDateTime transactionTime;
 }
