@@ -83,4 +83,17 @@ public class PaymentCallbackController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         return LocalDateTime.parse(ts, formatter);
     }
+    // ✅ Get all transaction history
+    @GetMapping("/history")
+    public ResponseEntity<List<Transaction>> getAllTransactions() {
+        List<Transaction> transactions = transactionRepository.findAll();
+        return ResponseEntity.ok(transactions);
+    }
+
+    // ✅ Get transaction history for a specific user by phoneNumber
+    @GetMapping("/history/{phoneNumber}")
+    public ResponseEntity<List<Transaction>> getUserTransactions(@PathVariable String phoneNumber) {
+        List<Transaction> transactions = transactionRepository.findByPhoneNumber(phoneNumber);
+        return ResponseEntity.ok(transactions);
+    }
 }
