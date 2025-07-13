@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 @Table(name = "transactions")
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Transaction {
 
     @Id
@@ -20,17 +20,17 @@ public class Transaction {
     private Long id;
 
     private String phoneNumber;
-
     private Double amount;
-
-    private String mpesaReceiptNumber;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
+    private String reference; // ✅ Add this line
+
     private String merchantRequestId;
-
     private String checkoutRequestId;
-
+    private String mpesaReceiptNumber;
     private LocalDateTime transactionTime;
+
+    private LocalDateTime createdAt;
 }

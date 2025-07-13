@@ -6,12 +6,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Base64Utils;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +25,7 @@ public class MpesaUtils {
 
     public String generateAccessToken() {
         String credentials = mpesaConfig.getConsumerKey() + ":" + mpesaConfig.getConsumerSecret();
-        String encodedCredentials = Base64Utils.encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Basic " + encodedCredentials);
@@ -52,7 +52,7 @@ public class MpesaUtils {
 
     public String generatePassword(String timestamp) {
         String toEncode = mpesaConfig.getBusinessShortCode() + mpesaConfig.getPasskey() + timestamp;
-        return Base64Utils.encodeToString(toEncode.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(toEncode.getBytes(StandardCharsets.UTF_8));
     }
 
     public Map<String, Object> buildStkPushPayload(PaymentRequest request, String password, String timestamp) {
