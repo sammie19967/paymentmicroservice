@@ -84,16 +84,22 @@ public class PaymentCallbackController {
         return LocalDateTime.parse(ts, formatter);
     }
     // ✅ Get all transaction history
-    @GetMapping("/history")
+    @GetMapping("/transaction")
     public ResponseEntity<List<Transaction>> getAllTransactions() {
         List<Transaction> transactions = transactionRepository.findAll();
         return ResponseEntity.ok(transactions);
     }
 
     // ✅ Get transaction history for a specific user by phoneNumber
-    @GetMapping("/history/{phoneNumber}")
+    @GetMapping("/transaction/{phoneNumber}")
     public ResponseEntity<List<Transaction>> getUserTransactions(@PathVariable String phoneNumber) {
         List<Transaction> transactions = transactionRepository.findByPhoneNumber(phoneNumber);
         return ResponseEntity.ok(transactions);
     }
+    @GetMapping("/transaction/id/{id}")
+    public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id) {
+        return transactionRepository.findById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+}
 }
