@@ -1,12 +1,21 @@
 # Payment Service
 
-features:
+Features:
 
 - STK Push
 - Transaction history
 - Transaction details
+- Transaction callback
+- Transaction status
+- Transaction Description
+- Transaction Reference
+- Transaction Checkout Request ID
+- Transaction M-Pesa Receipt Number
+- Transaction Transaction Time
+- Transaction Created At
+- Transaction Updated At etc.
 
-routes:
+Routes:
 
 - /api/payment/stk-push
 - /api/payment/transactions
